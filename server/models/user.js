@@ -1,17 +1,14 @@
-/*jshint esversion: 6 */
-/* jshint node: true */
+const mongoose = require('mongoose');
 
-let mongoose = require('mongoose');
-
-let User = mongoose.model('User', {
-    email: {
-        require: true,
-        trim: true,
-        type: String,
-        minlength: 1
-    }
+const User = mongoose.model('User', {
+  email: {
+    require: true,
+    trim: true,
+    type: String,
+    minlength: 1,
+  },
 });
 
 module.exports = {
-    User: User
+  User,
 };
