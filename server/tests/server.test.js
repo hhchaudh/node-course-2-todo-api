@@ -1,6 +1,8 @@
 /*jshint esversion: 6 */
 /* jshint node: true */
 
+const {ObjectID} = require('mongodb');
+
 const expect = require('expect');
 const request = require('supertest');
 
@@ -8,8 +10,10 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 const todos = [{
+    _id: new ObjectID(),
     text: 'First test todo'
 }, {
+    _id: new ObjectID(),
     text: 'Second test todo'
 }];
 
@@ -75,6 +79,33 @@ describe('GET /todos', () => {
             .expect((res) => {
                 expect(res.body.todos.length).toBe(2);
             })
+            .end(done);
+    });
+});
+
+describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => { // done arg used for async stuff
+        request(app) // supertest req
+            .get(`/todos/${todos[0]._id.toHexString()}`) //convert ObjectID to string in the URL
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(todos[0].text); //returned object should have todo property as set in server.js
+            })
+            .end(done);
+    });
+
+    it('should return 404 if todo not found', (done) => {
+        let hexId = new ObjectID().toHexString();
+        request(app)
+            .get(`/todos/${hexId}`)
+            .expect(404)
+            .end(done);
+    });
+
+    it('should return 404 if ID malformed', (done) => {
+        request(app)
+            .get(`/todos/123`)
+            .expect(404)
             .end(done);
     });
 });
