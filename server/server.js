@@ -1,6 +1,4 @@
-/* jshint esversion: 6 */
-/* jshint node: true */
-
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { ObjectID } = require('mongodb');
@@ -68,6 +66,32 @@ app.delete('/todos/:id', (req, res) => {
     res.status(400).send(e);
   });
   return undefined;
+});
+
+app.patch('/todos/:id', (req, res) => {
+  const { id } = req.params;
+
+  const body = _.pick(req.body, ['text', 'completed']); // use lodash to rip off props 'text' and 'completed'
+
+  if (!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime(); // return javascript timestamp (ms from january 1 1970)
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, { $set: body }, { new: true }).then((todo) => { // new: true -> get the new item
+    if (!todo) {
+      return res.status(404).send();
+    }
+    res.send({ todo });
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
 });
 
 app.listen(port, () => {
